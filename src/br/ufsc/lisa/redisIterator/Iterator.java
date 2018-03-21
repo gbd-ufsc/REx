@@ -49,40 +49,31 @@ public class Iterator {
 		Jedis jedis = new Jedis("localhost");
 
 		ScanResult<String> scanResult = jedis.scan("0");
-		List<String> keys = scanResult.getResult();
 		String nextCursor = scanResult.getStringCursor();
 		JSONParser parser = new JSONParser();
 		int counter = 0;
-		String value = null;
 
 		while (true) {
-
-			if (nextCursor.equals("0")) {
-				break;
-			}
-			List<String> result = scanResult.getResult();
-			scanResult = jedis.scan(nextCursor);
 			nextCursor = scanResult.getStringCursor();
-//			keys = scanResult.getResult();
-			for (counter = 0; counter <= keys.size(); counter++) {
+			List<String> keys = scanResult.getResult();
+			for (counter = 0; counter < keys.size(); counter++) {
 				if(counter == keys.size()) {
+//					counter = 0;
 					break;
-				}
-//				System.out.println("KEY: " + keys.get(counter) + " VALUE: ");
-				
+				}				
 				try {
-
 					JSONObject json = (JSONObject) parser.parse(jedis.rpop(keys.get(counter)));
-					documentoJson(json);
-					
+					documentoJson(json);					
 					System.out.println("Added to function 'documentoJson'");
 
 				} catch (ParseException e) {
 					System.out.println("Not a valid JSON");
 				}
 			}
-//			System.out.println(keys = scanResult.getResult());
-
+			if (nextCursor.equals("0")) {
+				break;
+			}
+			scanResult = jedis.scan(nextCursor);
 		}
 		jedis.close();
 	}
